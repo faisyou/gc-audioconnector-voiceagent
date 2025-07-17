@@ -20,6 +20,28 @@ This repository provides a sample implementation for a Voice Agent based on the 
 - TypeScript for development.
 - `ts-node` for development-time execution.
 
+## 📁 Project Structure
+
+```
+gc-audioconnector-voiceagent/
+├── src/
+│   ├── auth/               # Handles authentication and authorization logic
+│   ├── common/             # Contains shared utilities (Now it has deafult values of few environment variables and bytes size. Scope will be extended in future)
+│   ├── prompts/            # Manages prompt templates and tools configuration for the voice agent
+│   ├── protocol/           # Defines protocols and handlers for audio streams and event processing
+│   ├── services/           # Contains business logic and service modules for application functionality
+│   ├── websocket/          # Manages WebSocket connections and communication logic for real-time audio data
+│   └── index.ts            # Main entry point for the application, initializing and orchestrating components
+├── .env                    # Stores environment variables
+├── package.json            # Defines NPM dependencies, scripts, and metadata for the project
+├── tsconfig.json           # Configures TypeScript compiler options for the project
+├── start.sh                # Shell script for starting the application
+├── Dockerfile              # Docker configuration for containerizing the application
+└── README.md               # Project documentation
+```
+
+---
+
 ### Available Scripts
 
 ```bash
@@ -97,6 +119,11 @@ This example assumes a `NewBookingPrompt` and corresponding toolset have been cr
 ---
 
 ## 🧹 Core Classes
+### [`Server`](./src/websocket/server.ts)
+
+Hosts the Express and WebSocket servers to manage real-time audio connections with Genesys Cloud Audio Connector.
+Verifies incoming WebSocket upgrade requests and maps each connection to a `Session` instance.
+Routes audio/text messages to the correct session and handles connection lifecycle events (connect, error, close).
 
 ### [`Session`](./src/websocket/session.ts)
 
@@ -113,7 +140,16 @@ Base class for all Voice AI Agent platforms. New integrations should inherit fro
 #### Sample Implementations:
 
 - [`OpenAIRealTime`](./src/services/open-ai.ts)
+
+Integrates with the OpenAI Realtime API over WebSocket to enable real-time, voice-based AI conversations.
+Handles session setup, audio streaming, speech detection, and AI response playback to the user via Genesys AudioConnector.
+Processes tool calls returned by the model (e.g., searchFlight, createItinerary, transferToAgent, endCall), executes the appropriate local function, and returns results back to OpenAI in real time.
+Also manages barge-in, silence detection via timers, and gracefully handles disconnections or failed responses.
+
 - [`DeepgramAIVoiceAgent`](./src/services/deepgram.ts)
+
+Connects to the Deepgram VoiceAgent API via WebSocket to handle real-time voice conversations.
+Manages audio streaming, session initialization with configurable voice models, and processes events like user speech detection and agent audio completion.
 
 To integrate a new Voice AI platform:
 
